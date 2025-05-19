@@ -56,61 +56,141 @@ function resetTimer() {
   updateDisplay();
 }
 
+const plantTypes = [
+  'flower',
+  'tree', 
+  'bush',
+  'cactus',
+  'flower2'
+]
+
 function growPlant() {
   const grid = document.getElementById("plant-grid");
+ 
+  const randomType = plantTypes[Math.floor(Math.random() * plantTypes.length)];
   const plant = document.createElement("div");
-  plant.classList.add("plant-icon");
+  plant.classList.add("plant-icon", randomType);
   plant.setAttribute("draggable", "true");
-  plant.id = "plant-" + Date.now();  // Give each plant a unique id
+  plant.id = "plant-" + Date.now();  
   plant.addEventListener("dragstart", dragStart);
   grid.appendChild(plant);
 }
 
-function addPlanToInventory() {
-  const grid = document.getElementById('plant-grid');
-  const plant = document.createElement("div");
-  plant.classList.add("plant-icon");
-  plant.setAttribute("draggable","true");
-  plant.id = "plant-" + Date.now();
-  plant.addEventListener("dragstart", dragStart);
-  grid.appendChild(plant);
-
-}
+//That saves my plant's id while i dragging it
 function dragStart(event) {
   event.dataTransfer.setData("text/plain", event.target.id);
 }
 
-// Allow garden to accept drops
-const garden = document.getElementById("garden");
-garden.addEventListener("dragover", (e) => {
-  e.preventDefault(); // Needed to allow drop
+// THis shit makes all tiles accept drops, when my previos code cover only garden part without each separate tile
+document.querySelectorAll('.tile').forEach(tile => {
+  tile.addEventListener('dragover', function(event) {
+    event.preventDefault();
+  });
+
+  tile.addEventListener('drop', function(event) {
+    event.preventDefault();
+    const plantId = event.dataTransfer.getData("text/plain");
+    const plantElement = document.getElementById(plantId);
+    if (plantElement) {
+      this.appendChild(plantElement); // To drop plant into tile
+    }
+  });
 });
 
-garden.addEventListener("drop", (e) => {
-  e.preventDefault();
-  const plantId = e.dataTransfer.getData("text/plain");
-  const plant = document.getElementById(plantId);
-  garden.appendChild(plant);
-  
-  // Optional: position the plant where dropped
-  const rect = garden.getBoundingClientRect();
-  plant.style.position = "absolute";
-  plant.style.left = (e.clientX - rect.left - 20) + "px";
-  plant.style.top = (e.clientY - rect.top - 20) + "px";
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  const tiles = document.querySelectorAll(".tile");
-  tiles.forEach((tile) => {
-    tile.addEventListener("dragover", (e) => {
-      e.preventDefault();
+window.addEventListener("DOMContentLoaded", () => {
+  // Add drop support to all tiles
+  document.querySelectorAll('.tile').forEach(tile => {
+    tile.addEventListener('dragover', event => {
+      event.preventDefault();
     });
 
-    tile.addEventListener("drop", (e) => {
-      e.preventDefault();
-      const plantId = e.dataTransfer.getData("text/plain");
+    tile.addEventListener('drop', event => {
+      event.preventDefault();
+      const plantId = event.dataTransfer.getData("text/plain");
       const plantElement = document.getElementById(plantId);
-      tile.appendChild(plantElement);
+      if (plantElement) {
+        tile.appendChild(plantElement); 
+      }
     });
+  });
+});
+
+//my description modal
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById("descriptionModal");
+  const closeBtn = document.querySelector('#descriptionModal .close');
+  const modalTriggers = document.querySelectorAll('[data-open-modal]');
+
+  function openModal() {
+    modal.style.display = 'block'
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  if (modalTriggers) {
+    modalTriggers.forEach(trigger => {
+      trigger.addEventListener('click', openModal);
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeModal);
+  }
+
+  window.addEventListener('click', function(event) {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && modal.style.display === 'block') {
+      closeModal();
+    }
+  });
+});
+
+//My modal for inventory
+// This modal is for the inventory, which is opened by clicking on the inventory button
+
+document.addEventListener('DOMContentLoaded', function() {
+  const modalInventory = document.getElementById("inventoryModal");
+  const closeBtn = document.querySelector('#inventoryModal .close');
+  const modalTriggers = document.querySelectorAll('[data-open-inventory]');
+  const inventoryBtn = document.getElementById("invent-button"); 
+
+  function openModal() {
+    modalInventory.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    inventoryBtn.style.display = 'none'; 
+  }
+
+  function closeModal() {
+    modalInventory.style.display = 'none';
+    document.body.style.overflow = '';
+    inventoryBtn.style.display = 'block';
+  }
+
+  modalTriggers.forEach(trigger => {
+    trigger.addEventListener('click', openModal);
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeModal);
+  }
+
+  window.addEventListener('click', function(event) {
+    if (event.target === modalInventory) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && modalInventory.style.display === 'block') { 
+      closeModal();
+    }
   });
 });
